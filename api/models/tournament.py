@@ -15,7 +15,7 @@ class Tournament(models.Model):
       User,
       on_delete=models.CASCADE
   )
-  players = ArrayField(models.CharField(max_length=30))# Array of strings for now. Might turn into a ForeignKey later
+  # players = ArrayField(models.CharField(max_length=30)) # Array of strings for now. Might turn into a ForeignKey later
 
   def __str__(self):
     return f"'{self.name}' is a {self.game} tournament. Contact the TD at {self.owner.email}."
@@ -28,5 +28,5 @@ class Tournament(models.Model):
         'game': self.game,
         'description': self.description,
         'owner': self.owner,
-        'players': self.players
+        # 'players': self.players
     }

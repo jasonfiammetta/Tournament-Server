@@ -12,27 +12,46 @@ from ..serializers import TournamentSerializer, UserSerializer
 
 # Create your views here.
 class Tournaments(generics.ListCreateAPIView):
+    def post(self, request):
+        """Create request"""
+        # Add user to request object
+        request.data['tournament']['owner'] = request.user.id
+        # request.data['tournament']['players'] = []
+        # Serialize/create tournament
+        tournament = TournamentSerializer(data=request.data['tournament'])
+        print('tournament serializer:', tournament)
+        if tournament.is_valid():
+            m = tournament.save()
+            return Response(tournament.data, status=status.HTTP_201_CREATED)
+        else:
+            print('Bad request:', request.data)
+            return Response(tournament.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PublicTournaments(generics.ListCreateAPIView):
     authentication_classes = ()
     permission_classes = ()
+    serializer_class = TournamentSerializer
+
     def get(self, request):
         """Index request"""
         tournaments = Tournament.objects.all()
         # tournaments = Tournament.objects.filter(owner=request.user.id)
         data = TournamentSerializer(tournaments, many=True).data
+        print('tournaments', data)
         return Response(data)
 
+class PublicTournamentsDetail(generics.ListCreateAPIView):
+    authentication_classes = ()
+    permission_classes = ()
     serializer_class = TournamentSerializer
-    def post(self, request):
-        """Create request"""
-        # Add user to request object
-        request.data['tournament']['owner'] = request.user.id
-        # Serialize/create tournament
-        tournament = TournamentSerializer(data=request.data['tournament'])
-        if tournament.is_valid():
-            m = tournament.save()
-            return Response(tournament.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(tournament.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, pk):
+        """Index request"""
+        tournament = get_object_or_404(Tournament, pk=pk)
+        # tournaments = Tournament.objects.filter(owner=request.user.id)
+        data = TournamentSerializer(tournament).data
+        print('tournaments', data)
+        return Response(data)
 
 class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes=(IsAuthenticated,)
@@ -48,7 +67,7 @@ class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, pk):
         """Delete request"""
         tournament = get_object_or_404(Tournament, pk=pk)
-        if not request.user.id == tournament['owner']:
+        if not request.user.id == tournament.owner:
             raise PermissionDenied('Unauthorized, you do not own this tournament')
         tournament.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -62,7 +81,7 @@ class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
         # Locate Tournament
         tournament = get_object_or_404(Tournament, pk=pk)
         # Check if user is  the same
-        if not request.user.id == tournament['owner']:
+        if not request.user.id == tournament.owner:
             raise PermissionDenied('Unauthorized, you do not own this tournament')
 
         # Add owner to data object now that we know this user owns the resource

@@ -12,11 +12,13 @@ from ..models.user import User
 class SignUp(generics.CreateAPIView):
     authentication_classes = ()
     permission_classes = ()
+    serializer_class = UserSerializer
+
     def post(self, request):
         user = UserSerializer(data=request.data['credentials'])
         if user.is_valid():
             u = user.save()
-            return Response(user.data, status=status.HTTP_201_CREATED)
+            return Response({ 'user': user.data }, status=status.HTTP_201_CREATED)
         else:
             return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -35,9 +37,11 @@ class SignIn(generics.CreateAPIView):
             if user.is_active:
                 login(request, user)
                 return Response({
-                    'id': user.id,
-                    'email': user.email,
-                    'token': user.get_auth_token(user)
+                    'user': {
+                        'id': user.id,
+                        'email': user.email,
+                        'token': user.get_auth_token(user)
+                    }
                 })
             else:
                 return Response({ 'msg': 'The account is inactive.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -60,7 +64,7 @@ class ChangePassword(generics.UpdateAPIView):
         user = request.user
         serializer = ChangePasswordSerializer(data=request.data['passwords'])
         if serializer.is_valid():
-            print(serializer)
+            # print(serializer)
             if not user.check_password(serializer.data['old']):
                 return Response({ 'msg': 'Wrong password'}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
             # set_password will also hash the password

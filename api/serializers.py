@@ -1,14 +1,14 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models.mango import Mango
+from .models.tournament import Tournament
 from .models.user import User
 
 
-class MangoSerializer(serializers.ModelSerializer):
+class TournamentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Mango
-        fields = ('id', 'name', 'color', 'ripe', 'owner')
+        model = Tournament
+        fields = ('id', 'name', 'game', 'description', 'owner') # Add players
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
         return get_user_model().objects.create_user(**validated_data)
 
 class UserLoginSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=300, required=True)
+    email = serializers.CharField(max_length=100, required=True)
     password = serializers.CharField(required=True, write_only=True)
 
 class ChangePasswordSerializer(serializers.Serializer):
