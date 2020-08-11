@@ -11,12 +11,16 @@ class Match(models.Model):
     player_1 = models.ForeignKey(
       Player,
       on_delete=models.CASCADE,
-      related_name='player_1'
+      related_name='player_1',
+      null=True,
+      blank=True
     )
     player_2 = models.ForeignKey(
       Player,
       on_delete=models.CASCADE,
-      related_name='player_2'
+      related_name='player_2',
+      null=True,
+      blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

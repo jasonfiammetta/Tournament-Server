@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 
 from ..models.tournament import Tournament
 from ..serializers import TournamentSerializer
+from ..serializers import PlayerSerializer
 
 # Authenticated Tournament view
 class Tournaments(generics.ListCreateAPIView):
@@ -29,11 +30,23 @@ class Tournaments(generics.ListCreateAPIView):
         # Add user to request object
         request.data['tournament']['owner'] = request.user.id
         # request.data['tournament']['players'] = []
+        playerList = request.data['tournament']['players']
+        request.data['tournament']['players'] = []
         # Serialize/create tournament
         tournament = TournamentSerializer(data=request.data['tournament'])
-        print('tournament serializer:', tournament)
+
         if tournament.is_valid():
             tournament.save()
+            print('tournament', tournament.data)
+            print('tournament [id]', tournament.data['id'])
+            print('players to be added', playerList)
+            for p in playerList:
+                print('player', p)
+                ps = PlayerSerializer(data={
+                  'name': p,
+                  'tournament': tournament.data['id']})
+                if ps.is_valid():
+                  ps.save()
             return Response(tournament.data, status=status.HTTP_201_CREATED)
         else:
             print('Bad request:', request.data)
@@ -78,5 +91,5 @@ class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
         if ts.is_valid():
             ts.save()
             print(ts)
-            return Response(ts.data)
+            return Response(ts.data, status=status.HTTP_202_ACCEPTED)
         return Response(ts.errors, status=status.HTTP_400_BAD_REQUEST)

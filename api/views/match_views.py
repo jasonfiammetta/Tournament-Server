@@ -31,8 +31,8 @@ class Matches(APIView):
             return Response(match.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MatchDetail(APIView):
-    authentication_classes = ()
-    permission_classes = ()
+    # authentication_classes = ()
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = MatchSerializier
 
     def get(self, request, t_pk, m_pk):
@@ -41,3 +41,24 @@ class MatchDetail(APIView):
         data = MatchSerializier(match).data
         print(f"Match {m_pk}:", data)
         return Response(data)
+
+    def delete(self, request, t_pk, m_pk):
+        """Delete individual Match"""
+        tournament = get_object_or_404(Tournament, pk=t_pk)
+        match = get_object_or_404(Match, pk=m_pk)
+        if not request.user.id == tournament.owner:
+            raise PermissionDenied('Unauthorized, you do not own the tournament this match belongs to.')
+        match.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def partial_update(self, request, t_pk, m_pk):
+        tournament = get_object_or_404(Tournament, pk=t_pk)
+        match = get_object_or_404(Match, pk=m_pk)
+        if not request.user.id == tournament.owner:
+            raise PermissionDenied('Unauthorized, you do not own the tournament this match belongs to.')
+        if request.data['match'].get('tournament', False):
+            del request.data['match']['tournament']
+        ms = MatchSerializier(match, data=request.data['match'])
+        if ms.is_valid():
+            ms.save()
+            return Response(ms.data, status=status.HTTP_202_ACCEPTED)
