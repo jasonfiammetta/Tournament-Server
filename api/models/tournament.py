@@ -27,7 +27,8 @@ class Tournament(models.Model):
         'name': self.name,
         'game': self.game,
         'description': self.description,
-        'owner': self.owner.email,
+        'owner': self.owner.id,
+        'owner_email': self.owner.email
         # 'players': self.players
     }
 
