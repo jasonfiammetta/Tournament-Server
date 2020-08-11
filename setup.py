@@ -14,13 +14,13 @@ with open('LICENSE.md') as f:
     LICENSE = f.read()
 
 setup(
-    name='django-auth-template',
+    name='tournament_server',
     version='0.1.0',
-    description='GA SEI Boston Django Authentication Template',
+    description='Tournament Server application',
     long_description=README,
     author='<author>',
     author_email='<email>',
-    url='https://git.generalassemb.ly/ga-wdi-boston/django-auth-template',
+    url='https://github.com/jasonfiammetta/Tournament-Server',
     license=LICENSE,
     packages=find_packages(exclude=('tests', 'docs'))
 )

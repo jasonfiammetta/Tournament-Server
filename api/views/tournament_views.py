@@ -4,14 +4,26 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import generics, status
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user, authenticate, login, logout
-from django.middleware.csrf import get_token
 
 from ..models.tournament import Tournament
-from ..serializers import TournamentSerializer, UserSerializer
+from ..serializers import TournamentSerializer
 
-# Create your views here.
+# Authenticated Tournament view
 class Tournaments(generics.ListCreateAPIView):
+    # authentication_classes = ()
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    serializer_class = TournamentSerializer
+
+    queryset = Tournament.objects.all()
+
+    def get(self, request):
+        """Index request"""
+        tournaments = Tournament.objects.all()
+        # tournaments = Tournament.objects.filter(owner=request.user.id)
+        data = TournamentSerializer(tournaments, many=True).data
+        # print('tournaments', data)
+        return Response(data)
+
     def post(self, request):
         """Create request"""
         # Add user to request object
@@ -21,40 +33,15 @@ class Tournaments(generics.ListCreateAPIView):
         tournament = TournamentSerializer(data=request.data['tournament'])
         print('tournament serializer:', tournament)
         if tournament.is_valid():
-            m = tournament.save()
+            tournament.save()
             return Response(tournament.data, status=status.HTTP_201_CREATED)
         else:
             print('Bad request:', request.data)
             return Response(tournament.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PublicTournaments(generics.ListCreateAPIView):
-    authentication_classes = ()
-    permission_classes = ()
-    serializer_class = TournamentSerializer
-
-    def get(self, request):
-        """Index request"""
-        tournaments = Tournament.objects.all()
-        # tournaments = Tournament.objects.filter(owner=request.user.id)
-        data = TournamentSerializer(tournaments, many=True).data
-        print('tournaments', data)
-        return Response(data)
-
-class PublicTournamentsDetail(generics.ListCreateAPIView):
-    authentication_classes = ()
-    permission_classes = ()
-    serializer_class = TournamentSerializer
-
-    def get(self, request, pk):
-        """Index request"""
-        tournament = get_object_or_404(Tournament, pk=pk)
-        # tournaments = Tournament.objects.filter(owner=request.user.id)
-        data = TournamentSerializer(tournament).data
-        print('tournaments', data)
-        return Response(data)
-
 class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes=(IsAuthenticated,)
+    permission_classes=(IsAuthenticatedOrReadOnly,)
+
     def get(self, request, pk):
         """Show request"""
         tournament = get_object_or_404(Tournament, pk=pk)
@@ -87,9 +74,9 @@ class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
         # Add owner to data object now that we know this user owns the resource
         request.data['tournament']['owner'] = request.user.id
         # Validate updates with serializer
-        ms = TournamentSerializer(tournament, data=request.data['tournament'])
-        if ms.is_valid():
-            ms.save()
-            print(ms)
-            return Response(ms.data)
-        return Response(ms.errors, status=status.HTTP_400_BAD_REQUEST)
+        ts = TournamentSerializer(tournament, data=request.data['tournament'])
+        if ts.is_valid():
+            ts.save()
+            print(ts)
+            return Response(ts.data)
+        return Response(ts.errors, status=status.HTTP_400_BAD_REQUEST)

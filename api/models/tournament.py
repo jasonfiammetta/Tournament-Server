@@ -27,6 +27,12 @@ class Tournament(models.Model):
         'name': self.name,
         'game': self.game,
         'description': self.description,
-        'owner': self.owner,
+        'owner': self.owner.email,
         # 'players': self.players
     }
+
+  def owner_email(self):
+    return self.owner.email
+
+  def players(self):
+    return self.player_set.all()
