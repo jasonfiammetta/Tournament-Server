@@ -8,8 +8,8 @@ from .models.user import User
 
 class MatchSerializier(serializers.ModelSerializer):
     # tournament_name = serializers.ReadOnlyField(source='tournament.name')
-    player_1_name = serializers.ReadOnlyField(source='player_1.name')
-    player_2_name = serializers.ReadOnlyField(source='player_2.name')
+    # player_1_name = serializers.ReadOnlyField(source='player_1.name')
+    # player_2_name = serializers.ReadOnlyField(source='player_2.name')
 
     class Meta:
         model = Match
@@ -25,11 +25,11 @@ class TournamentSerializer(serializers.ModelSerializer):
     # players = PlayerSerializer(read_only=True, many=True)
     # print('tournament serializer players', players)
     # player_names = serializers.ReadOnlyField(map(lambda p: p.name, players.data))
+    matches = MatchSerializier(read_only=True, many=True)
 
     class Meta:
         model = Tournament
-        fields = ('id', 'name', 'game', 'description', 'owner', 'owner_email', 'players') #, 'player_names')
-        # fields = ('as_dict',)
+        fields = ('id', 'name', 'game', 'description', 'owner', 'owner_email', 'players', 'matches')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

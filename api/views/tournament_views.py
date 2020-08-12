@@ -6,9 +6,8 @@ from rest_framework import generics, status
 from django.shortcuts import get_object_or_404
 
 from ..models.tournament import Tournament
-from ..serializers import TournamentSerializer
-from ..serializers import PlayerSerializer
-from ..serializers import UserSerializer
+from ..models.player import Player
+from ..serializers import TournamentSerializer, PlayerSerializer, UserSerializer, MatchSerializier
 
 # Authenticated Tournament view
 class Tournaments(generics.ListCreateAPIView):
@@ -24,6 +23,7 @@ class Tournaments(generics.ListCreateAPIView):
         # tournaments = Tournament.objects.filter(owner=request.user.id)
         data = TournamentSerializer(tournaments, many=True).data
         # print('tournaments', data)
+
         return Response(data)
 
     def post(self, request):
@@ -31,17 +31,14 @@ class Tournaments(generics.ListCreateAPIView):
         # Add user to request object
         request.data['tournament']['owner'] = request.user.id
         # request.data['tournament']['players'] = []
-        playerList = request.data['tournament']['players']
+        player_list = request.data['tournament']['players']
         request.data['tournament']['players'] = []
         # Serialize/create tournament
         tournament = TournamentSerializer(data=request.data['tournament'])
 
         if tournament.is_valid():
             tournament.save()
-            print('tournament', tournament.data)
-            print('tournament [id]', tournament.data['id'])
-            print('players to be added', playerList)
-            for p in playerList:
+            for p in player_list:
                 print('player', p)
                 ps = PlayerSerializer(data={
                   'name': p,
@@ -61,6 +58,12 @@ class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
         """Show request"""
         tournament = get_object_or_404(Tournament, pk=pk)
         data = TournamentSerializer(tournament).data
+        # print('tournament', data)
+        data['player_names'] = []
+        for p in data['players']:
+            player = get_object_or_404(Player, pk=p)
+            # print(f"player {p}", player)
+            data['player_names'].append(player.name)
         return Response(data)
 
     def delete(self, request, pk):

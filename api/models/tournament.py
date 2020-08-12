@@ -28,12 +28,16 @@ class Tournament(models.Model):
         'game': self.game,
         'description': self.description,
         'owner': self.owner.id,
-        'owner_email': self.owner.email
-        # 'players': self.players
+        'owner_email': self.owner.email,
+        # 'players': self.players(),
+        # 'matches': self.matches()
     }
 
   def owner_email(self):
     return self.owner.email
 
   def players(self):
-    return self.player_set.all()
+    return map(lambda p: p.name, self.player_set.all())
+
+  # def matches(self):
+  #   return map(lambda m: m.id, self.match_set.all())
