@@ -1,3 +1,2 @@
-web: tournament_server.wsgi
+web: gunicorn tournament-server.wsgi
 release: python manage.py migrate
-
